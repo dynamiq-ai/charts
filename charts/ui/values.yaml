@@ -8,9 +8,9 @@ image:
   repository: dynamiqai/ui
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "79976d9"
+  tag: "5e79c51"
 
-imagePullSecrets: []
+imagePullSecrets: [{ name: docker-registry }]
 nameOverride: ""
 fullnameOverride: ""
 

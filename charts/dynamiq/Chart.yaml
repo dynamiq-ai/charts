@@ -23,13 +23,19 @@ version: 0.1.2
 # It is recommended to use it with quotes.
 appVersion: "1.16.0"
 
-#dependencies:
-#  - name: nexus
-#    version: 0.1.0
-#    repository: https://github.com/dynamiq-ai/charts/
-#  - name: synapse
-#    version: 0.1.0
-#    repository: https://github.com/dynamiq-ai/charts/
-#  - name: ui
-#    version: 0.1.0
-#    repository: https://github.com/dynamiq-ai/charts/
+dependencies:
+  - name: nexus
+    version: 0.1.4
+    repository: https://dynamiq-ai.github.io/charts/
+  - name: synapse
+    version: 0.1.4
+    repository: https://dynamiq-ai.github.io/charts/
+  - name: ui
+    version: 0.1.4
+    repository: https://dynamiq-ai.github.io/charts/
+  - name: external-secrets
+    version: 0.10.3
+    repository: https://charts.external-secrets.io/
+  - name: fission-all
+    version: 1.20.4
+    repository: https://fission.github.io/fission-charts/
