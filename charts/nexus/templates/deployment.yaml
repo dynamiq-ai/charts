@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "nexus.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "nexus.labels" . | nindent 4 }}
 spec:
