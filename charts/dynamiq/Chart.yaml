@@ -25,11 +25,14 @@ appVersion: "1.16.0"
 
 dependencies:
   - name: nexus
-    version: 0.1.4
+    version: 0.1.5
     repository: https://dynamiq-ai.github.io/charts
+#    repository: file://../nexus
   - name: synapse
-    version: 0.1.4
+    version: 0.1.5
     repository: https://dynamiq-ai.github.io/charts
+#    repository: file://../synapse
   - name: ui
-    version: 0.1.4
+    version: 0.1.5
     repository: https://dynamiq-ai.github.io/charts
+#    repository: file://../ui
