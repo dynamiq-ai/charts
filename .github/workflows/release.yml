@@ -27,12 +27,10 @@ jobs:
       - name: add repos
         run: |
           helm repo add fission-all https://fission.github.io/fission-charts
-          helm repo add dynamiq https://dynamiq-ai.github.io/charts
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
         with:
-          charts_dir: charts
           packages_with_index: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
