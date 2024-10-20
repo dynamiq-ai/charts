@@ -1,0 +1,36 @@
+apiVersion: v1
+entries:
+  nexus:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-10-20T23:01:42.52175517Z"
+    description: A Helm chart for Kubernetes
+    digest: b469f2b3d50cd7f8acce226584403079eb2a9bf7245d6c745dce4b94a8c52cce
+    name: nexus
+    type: application
+    urls:
+    - nexus-0.1.5.tgz
+    version: 0.1.5
+  synapse:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-10-20T23:01:42.684424352Z"
+    description: A Helm chart for Kubernetes
+    digest: 916ba94232f79ace39392d8f9415dca5b79dabf9e33baec4d98139a49158636c
+    name: synapse
+    type: application
+    urls:
+    - synapse-0.1.5.tgz
+    version: 0.1.5
+  ui:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-10-20T23:01:42.859103532Z"
+    description: A Helm chart for Kubernetes
+    digest: 39da9cc22c681f7dff893e886c74bc7d096478e84ea827a0f620904877b344f0
+    name: ui
+    type: application
+    urls:
+    - ui-0.1.5.tgz
+    version: 0.1.5
+generated: "2024-10-20T23:01:42.859110996Z"
