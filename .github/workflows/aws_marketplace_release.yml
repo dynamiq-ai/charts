@@ -49,5 +49,5 @@ jobs:
           aws ecr get-login-password --region us-east-1 | helm registry login --username AWS --password-stdin 709825985650.dkr.ecr.us-east-1.amazonaws.com
           export D_VERSION=$(yq e .version charts/dynamiq/Chart.yaml)
           helm package charts/dynamiq -u -d ./.packages
-          helm push ./.packages/dynamiq-$D_VERSION.tgz oci://709825985650.dkr.ecr.us-east-1.amazonaws.com/dynamiq/dynamiq
+          helm push ./.packages/dynamiq-$D_VERSION.tgz oci://709825985650.dkr.ecr.us-east-1.amazonaws.com/dynamiq
           aws ecr describe-images --registry-id 709825985650 --repository-name dynamiq/dynamiq --region us-east-1
