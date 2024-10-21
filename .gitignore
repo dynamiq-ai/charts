@@ -1,1 +1,3 @@
 .local.values.yaml
+/charts/dynamiq/charts/
+/charts/dynamiq/Chart.lock
