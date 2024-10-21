@@ -26,15 +26,15 @@ appVersion: "1.16.0"
 dependencies:
   - name: nexus
     version: 0.1.4
-    repository: https://dynamiq-ai.github.io/charts
+    repository:  ./cr-release-pacakges
 #    repository: file://../nexus
   - name: synapse
     version: 0.1.4
-    repository: https://dynamiq-ai.github.io/charts
+    repository: ./cr-release-pacakges
 #    repository: file://../synapse
   - name: ui
     version: 0.1.4
-    repository: https://dynamiq-ai.github.io/charts
+    repository:  ./cr-release-pacakges
 #    repository: file://../ui
   - name: fission-all
     version: 1.20.5
