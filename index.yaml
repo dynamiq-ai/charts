@@ -3,6 +3,29 @@ entries:
   dynamiq:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2024-10-21T00:39:03.472682592Z"
+    dependencies:
+    - name: nexus
+      repository: https://dynamiq-ai.github.io/charts
+      version: 0.1.10
+    - name: synapse
+      repository: https://dynamiq-ai.github.io/charts
+      version: 0.1.10
+    - name: ui
+      repository: https://dynamiq-ai.github.io/charts
+      version: 0.1.10
+    - name: fission-all
+      repository: https://fission.github.io/fission-charts
+      version: 1.20.5
+    description: A Helm chart for Kubernetes
+    digest: 0ed8a3b3391e0c20bdba6ea9aebeb72d4e304293862a5371e89ddb795ea3493a
+    name: dynamiq
+    type: application
+    urls:
+    - dynamiq-0.1.9.tgz
+    version: 0.1.9
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2024-10-21T00:31:14.952348599Z"
     dependencies:
     - name: nexus
@@ -100,4 +123,4 @@ entries:
     urls:
     - ui-0.1.9.tgz
     version: 0.1.9
-generated: "2024-10-21T00:37:18.796670846Z"
+generated: "2024-10-21T00:39:03.47269774Z"
