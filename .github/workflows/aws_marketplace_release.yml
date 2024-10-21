@@ -39,11 +39,15 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: yq - portable yaml processor
+        uses: mikefarah/yq@v4.44.3
+
       - name: Package and push helm chart to Amazon ECR
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           aws ecr get-login-password --region us-east-1 | helm registry login --username AWS --password-stdin 709825985650.dkr.ecr.us-east-1.amazonaws.com
+          export D_VERSION=$(yq e .version charts/dynamiq/Chart.yaml)
           helm package charts/dynamiq -u -d ./.packages
-          helm push ./.packages/dynamiq-*.tgz oci://709825985650.dkr.ecr.us-east-1.amazonaws.com/dynamiq/dynamiq
+          helm push ./.packages/dynamiq-{$D_VERSION}.tgz oci://709825985650.dkr.ecr.us-east-1.amazonaws.com/dynamiq/dynamiq:{$D_VERSION}
           aws ecr describe-images --registry-id 709825985650 --repository-name dynamiq/chart --region us-east-1
