@@ -1,12 +1,11 @@
 ## How to install Dynamiq AI
 
 ```bash
-export KARPENTER_VERSION="1.0.6"
 export K8S_VERSION="1.31"
 
 export AWS_PARTITION="aws" 
 export CLUSTER_NAME="dynamiq-test"
-export AWS_DEFAULT_REGION="us-east-1"
+export AWS_DEFAULT_REGION="us-east-2"
 export AWS_ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
 #export TEMPOUT="$(mktemp)"
 export TEMPOUT="/Users/andrey/sites/dynamiq/infra/cloudformation/dynamiq-v2.yaml"
@@ -15,6 +14,7 @@ export AMD_AMI_ID="$(aws ssm get-parameter --name /aws/service/eks/optimized-ami
 export GPU_AMI_ID="$(aws ssm get-parameter --name /aws/service/eks/optimized-ami/${K8S_VERSION}/amazon-linux-2-gpu/recommended/image_id --query Parameter.Value --output text)"
 ```
 
+### Create Required Roles
 ```bash
 #curl -fsSL https://raw.githubusercontent.com/aws/karpenter-provider-aws/v"${KARPENTER_VERSION}"/website/content/en/preview/getting-started/getting-started-with-karpenter/cloudformation.yaml  > "${TEMPOUT}" \
 aws cloudformation deploy \
@@ -22,7 +22,10 @@ aws cloudformation deploy \
   --template-file "${TEMPOUT}" \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameter-overrides "ClusterName=${CLUSTER_NAME}"
+```
 
+### Create EKS Cluster
+```bash
 eksctl create cluster -f - <<EOF
 ---
 apiVersion: eksctl.io/v1alpha5
@@ -69,7 +72,7 @@ EOF
 
 export CLUSTER_ENDPOINT="$(aws eks describe-cluster --name "${CLUSTER_NAME}" --query "cluster.endpoint" --output text)"
 export KARPENTER_IAM_ROLE_ARN="arn:${AWS_PARTITION}:iam::${AWS_ACCOUNT_ID}:role/${CLUSTER_NAME}-karpenter"
-export EXTERNALSECRETS_IAM_ROLE_ARN="arn:${AWS_PARTITION}:iam::${AWS_ACCOUNT_ID}:role/${CLUSTER_NAME}-karpenter"
+export EXTERNALSECRETS_IAM_ROLE_ARN="arn:${AWS_PARTITION}:iam::${AWS_ACCOUNT_ID}:role/${CLUSTER_NAME}-external-secrets"
 
 echo "${CLUSTER_ENDPOINT} ${KARPENTER_IAM_ROLE_ARN}"
 ```
@@ -83,6 +86,8 @@ export PRIVATE_SUBNETS_ID=$(aws ec2 describe-subnets \
     --output json | jq -c .)
     
 aws rds create-db-subnet-group \
+    --no-cli-pager \
+    --output table \
     --db-subnet-group-name rds-${CLUSTER_NAME} \
     --db-subnet-group-description rds-${CLUSTER_NAME} \
     --subnet-ids ${PRIVATE_SUBNETS_ID}
@@ -91,6 +96,8 @@ export RDS_PASSWORD="$(date | md5sum  |cut -f1 -d' ')"
 echo "\r\nRDS_PASSWORD=${RDS_PASSWORD}\r\n"
 
 aws rds create-db-instance \
+    --no-cli-pager \
+    --output table \
     --db-instance-identifier rds-${CLUSTER_NAME} \
     --db-name dynamiq \
     --db-instance-class db.t4g.small \
@@ -104,16 +111,50 @@ aws rds create-db-instance \
 aws rds wait db-instance-available --db-instance-identifier rds-${CLUSTER_NAME}
 ```
 
-
-
+How to reset RDS password
 ```bash
-aws iam create-service-linked-role --aws-service-name spot.amazonaws.com || true
+aws rds modify-db-instance \
+    --no-cli-pager \
+    --output table \
+    --db-instance-identifier rds-${CLUSTER_NAME} \
+    --apply-immediately \
+    --master-user-password ${RDS_PASSWORD} 
+```
+
+### Create Secret
+```bash
+RDS_ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier rds-${CLUSTER_NAME} --query 'DBInstances[*].Endpoint.Address' --output text)
+RDS_PORT=$(aws rds describe-db-instances --db-instance-identifier rds-${CLUSTER_NAME} --query 'DBInstances[*].Endpoint.Port' --output text)
+RDS_USERNAME=$(aws rds describe-db-instances --db-instance-identifier rds-${CLUSTER_NAME} --query 'DBInstances[*].MasterUsername' --output text)
+RDS_DATABASE_NAME=$(aws rds describe-db-instances --db-instance-identifier rds-${CLUSTER_NAME} --query 'DBInstances[*].DBName' --output text)
+
+
+aws secretsmanager create-secret \
+    --no-cli-pager \
+    --output table \
+    --name DYNAMIQ-DB \
+    --description "Dynamiq DB" \
+    --secret-string "{\"username\":\"${RDS_USERNAME}\",\"password\":\"${RDS_PASSWORD}\",\"server_name\":\"${RDS_ENDPOINT}\",\"database\":\"${RDS_DATABASE_NAME}\"}"
 ```
 
 ```bash
+aws secretsmanager update-secret \
+    --no-cli-pager \
+    --output table \
+    --secret-id arn:aws:secretsmanager:us-east-1:128336707324:secret:DYNAMIQ-DB-CrIg8A \
+    --secret-string "{\"username\":\"${RDS_USERNAME}\",\"password\":\"${RDS_PASSWORD}\",\"server_name\":\"${RDS_ENDPOINT}\",\"database\":\"${RDS_DATABASE_NAME}\"}"
+```
+
+## Setup Karpenter
+```bash
 helm registry logout public.ecr.aws
 
-helm upgrade --install karpenter oci://public.ecr.aws/karpenter/karpenter --version "${KARPENTER_VERSION}" --namespace "${KARPENTER_NAMESPACE}" --create-namespace \
+export KARPENTER_VERSION="1.0.6"
+
+helm upgrade --install karpenter oci://public.ecr.aws/karpenter/karpenter \
+  --version "${KARPENTER_VERSION}" \
+  --namespace "kube-system" \
+  --create-namespace \
   --set "settings.clusterName=${CLUSTER_NAME}" \
   --set "settings.interruptionQueue=${CLUSTER_NAME}" \
   --set controller.resources.requests.cpu=1 \
@@ -122,9 +163,14 @@ helm upgrade --install karpenter oci://public.ecr.aws/karpenter/karpenter --vers
   --set controller.resources.limits.memory=1Gi \
   --wait
 ```
+```bash
+aws iam create-service-linked-role --aws-service-name spot.amazonaws.com || true
+```
 
 
+#### Create Node Pools
 
+##### Platform Node Pool
 ```bash
 cat <<EOF | envsubst | kubectl apply -f -
 apiVersion: karpenter.k8s.aws/v1beta1
@@ -191,6 +237,7 @@ spec:
 EOF
 ```
 
+##### Create GPU Node Pools
 ```bash
 cat <<EOF | envsubst | kubectl apply -f -
 apiVersion: karpenter.k8s.aws/v1beta1
@@ -261,17 +308,18 @@ spec:
 EOF
 ```
 
+### Setup External Secrets
 
 ```bash
-helm repo add external-secrets https://charts.external-secrets.io
-
-helm upgrade --install external-secrets external-secrets/external-secrets \
-    -n external-secrets \
+helm upgrade --install external-secrets external-secrets \
+    --repo https://charts.external-secrets.io \
+    --namespace external-secrets \
     --create-namespace \
     --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="${EXTERNALSECRETS_IAM_ROLE_ARN}" \
     --wait
 ```
 
+#### Create Secret Store
 ```bash
 cat <<EOF | envsubst | kubectl apply -f -
 apiVersion: external-secrets.io/v1beta1
@@ -284,30 +332,65 @@ spec:
       region: us-east-1
       service: SecretsManager
       role: ${EXTERNALSECRETS_IAM_ROLE_ARN}
-#---
-#apiVersion: external-secrets.io/v1beta1
-#kind: ExternalSecret
-#metadata:
-#  name: nexus-db-secret
-#spec:
-#  refreshInterval: 1h
-#  secretStoreRef:
-#    kind: ClusterSecretStore
-#    name: dynamiq
-#  target:
-#    name: nexus-db-secret
-#    template:
-#      type: Opaque
-#      data:
-#        DATABASE_PORT: "5432"
-#        DATABASE_SSLMODE: "require"
-#        DATABASE_SCHEMA: "public"
-#        DATABASE_NAME: "{{ .database }}"
-#        DATABASE_HOST: "{{ .server_name }}"
-#        DATABASE_USERNAME: "{{ .username }}"
-#        DATABASE_PASSWORD: "{{ .password | urlquery }}"
-#  dataFrom:
-#    - extract:
-#        key: DYNAMIQ-DB
 EOF
+```
+##### Create External Secret
+```bash
+cat <<EOF | envsubst | kubectl apply -f -
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: nexus-db-secret
+  namespace: dynamiq
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: dynamiq
+  target:
+    name: nexus-db-secret
+    template:
+      type: Opaque
+      data:
+        DATABASE_PORT: "5432"
+        DATABASE_SSLMODE: "require"
+        DATABASE_SCHEMA: "public"
+        DATABASE_NAME: "{{ .database }}"
+        DATABASE_HOST: "{{ .server_name }}"
+        DATABASE_USERNAME: "{{ .username }}"
+        DATABASE_PASSWORD: "{{ .password | urlquery }}"
+  dataFrom:
+    - extract:
+        key: DYNAMIQ-DB
+EOF
+```
+
+```bash
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace
+```
+
+```bash
+kubectl create -k "github.com/fission/fission/crds/v1?ref=v1.20.5"
+
+helm upgrade --install dynamiq dynamiq \
+  --repo https://dynamiq-ai.github.io/charts/ \
+  --namespace dynamiq --create-namespace
+  -f .local.values.yaml
+```
+
+```bash
+eksctl delete cluster -n ${CLUSTER_NAME}
+
+aws rds delete-db-instance --db-instance-identifier rds-${CLUSTER_NAME} \
+    --output table \
+    --no-cli-pager \
+    --skip-final-snapshot \
+    --delete-automated-backups
+
+aws cloudformation delete-stack --stack-name "${CLUSTER_NAME}" \
+  --output table \
+  --no-cli-pager
+
 ```
