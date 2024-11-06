@@ -3,6 +3,26 @@ entries:
   dynamiq:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2024-11-06T18:07:44.475769868Z"
+    dependencies:
+    - name: nexus
+      repository: https://dynamiq-ai.github.io/charts
+      version: 0.1.19
+    - name: synapse
+      repository: https://dynamiq-ai.github.io/charts
+      version: 0.1.10
+    - name: ui
+      repository: https://dynamiq-ai.github.io/charts
+      version: 0.1.10
+    description: A Helm chart for Kubernetes
+    digest: 86f3d65a3170fe25e39ff55e82c28fa98447092e2736e78eac7302288f1fe622
+    name: dynamiq
+    type: application
+    urls:
+    - dynamiq-0.1.21.tgz
+    version: 0.1.21
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2024-11-06T18:03:36.530914512Z"
     dependencies:
     - name: nexus
@@ -460,4 +480,4 @@ entries:
     urls:
     - ui-0.1.9.tgz
     version: 0.1.9
-generated: "2024-11-06T18:03:36.53116538Z"
+generated: "2024-11-06T18:07:44.475893321Z"
