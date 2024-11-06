@@ -334,36 +334,6 @@ spec:
       role: ${EXTERNALSECRETS_IAM_ROLE_ARN}
 EOF
 ```
-##### Create External Secret
-```bash
-cat <<EOF | envsubst | kubectl apply -f -
-apiVersion: external-secrets.io/v1beta1
-kind: ExternalSecret
-metadata:
-  name: nexus-db-secret
-  namespace: dynamiq
-spec:
-  refreshInterval: 1h
-  secretStoreRef:
-    kind: ClusterSecretStore
-    name: dynamiq
-  target:
-    name: nexus-db-secret
-    template:
-      type: Opaque
-      data:
-        DATABASE_PORT: "5432"
-        DATABASE_SSLMODE: "require"
-        DATABASE_SCHEMA: "public"
-        DATABASE_NAME: "{{ .database }}"
-        DATABASE_HOST: "{{ .server_name }}"
-        DATABASE_USERNAME: "{{ .username }}"
-        DATABASE_PASSWORD: "{{ .password | urlquery }}"
-  dataFrom:
-    - extract:
-        key: DYNAMIQ-DB
-EOF
-```
 
 ```bash
 helm upgrade --install ingress-nginx ingress-nginx \
