@@ -155,6 +155,7 @@ helm upgrade --install karpenter oci://public.ecr.aws/karpenter/karpenter \
   --version "${KARPENTER_VERSION}" \
   --namespace "kube-system" \
   --create-namespace \
+  --set replicas=1 \
   --set "settings.clusterName=${CLUSTER_NAME}" \
   --set "settings.interruptionQueue=${CLUSTER_NAME}" \
   --set controller.resources.requests.cpu=1 \
@@ -315,7 +316,6 @@ helm upgrade --install external-secrets external-secrets \
     --repo https://charts.external-secrets.io \
     --namespace external-secrets \
     --create-namespace \
-    --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="${EXTERNALSECRETS_IAM_ROLE_ARN}" \
     --wait
 ```
 
@@ -329,9 +329,8 @@ metadata:
 spec:
   provider:
     aws:
-      region: us-east-1
+      region: "${AWS_DEFAULT_REGION}"
       service: SecretsManager
-      role: ${EXTERNALSECRETS_IAM_ROLE_ARN}
 EOF
 ```
 ```bash
