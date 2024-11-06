@@ -142,6 +142,20 @@ entries:
   nexus:
   - apiVersion: v2
     appVersion: 0.20.0
+    created: "2024-11-06T15:27:20.987157758Z"
+    dependencies:
+    - name: external-secrets
+      repository: https://charts.external-secrets.io/
+      version: 0.10.5
+    description: A Helm chart for Kubernetes
+    digest: 358d00d3108e66716c343f726ff2bb3abf1257cbf50e0821be0a355fc7633dd6
+    name: nexus
+    type: application
+    urls:
+    - nexus-0.1.13.tgz
+    version: 0.1.13
+  - apiVersion: v2
+    appVersion: 0.20.0
     created: "2024-11-06T15:25:14.050440336Z"
     dependencies:
     - name: external-secrets
@@ -216,4 +230,4 @@ entries:
     urls:
     - ui-0.1.9.tgz
     version: 0.1.9
-generated: "2024-11-06T15:25:14.050471013Z"
+generated: "2024-11-06T15:27:20.987197211Z"
