@@ -346,8 +346,9 @@ kubectl create -k "github.com/fission/fission/crds/v1?ref=v1.20.5"
 
 helm upgrade --install dynamiq dynamiq \
   --repo https://dynamiq-ai.github.io/charts/ \
-  --namespace dynamiq --create-namespace
-  -f .local.values.yaml
+  --namespace dynamiq \
+  --create-namespace \
+  --values .local.values.yaml
 ```
 
 ```bash
