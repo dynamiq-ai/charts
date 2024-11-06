@@ -354,8 +354,6 @@ helm upgrade --install ingress-nginx ingress-nginx \
 
 
 ```bash
-kubectl create -k "github.com/fission/fission/crds/v1?ref=v1.20.5"
-
 helm upgrade --install dynamiq dynamiq \
   --repo https://dynamiq-ai.github.io/charts/ \
   --namespace dynamiq \

@@ -1,4 +1,7 @@
 dynamiq:
+  apps:
+    namespace: apps
+
   imageCredentials:
     registry: https://index.docker.io/v1/
     username: ""
