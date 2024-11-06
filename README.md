@@ -79,7 +79,7 @@ echo "${CLUSTER_ENDPOINT} ${KARPENTER_IAM_ROLE_ARN}"
 
 ### Create RDS
 ```bash
-export VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=eksctl-${CLUSTER_NAME}-cluster/VPC" --query 'Vpcs[*].VpcId' --output json | jq -c '.[0]')
+export VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=eksctl-${CLUSTER_NAME}-cluster/VPC" --query 'Vpcs[*].VpcId' --output json | jq -rc '.[0]')
 export PRIVATE_SUBNETS_ID=$(aws ec2 describe-subnets \
     --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:Name,Values=eksctl-${CLUSTER_NAME}-cluster/SubnetPrivate*" \
     --query 'Subnets[*].SubnetId' \
@@ -92,6 +92,16 @@ aws rds create-db-subnet-group \
     --db-subnet-group-description rds-${CLUSTER_NAME} \
     --subnet-ids ${PRIVATE_SUBNETS_ID}
 
+export RDS_SECURITY_GROUP=$(aws ec2 create-security-group --output json --group-name rds-${CLUSTER_NAME} --description "RDS Security Group" --vpc-id ${VPC_ID} | jq -r '.GroupId')
+
+aws ec2 authorize-security-group-ingress \
+    --output table \
+    --no-cli-pager \
+    --group-id ${RDS_SECURITY_GROUP} \
+    --protocol tcp \
+    --port 5432 \
+    --source-group $(aws ec2 describe-security-groups --filters "Name=tag:Name,Values=eksctl-${CLUSTER_NAME}-cluster/ClusterSharedNodeSecurityGroup" --query 'SecurityGroups[*].GroupId' --output json | jq -rc '.[0]')
+
 export RDS_PASSWORD="$(date | md5sum  |cut -f1 -d' ')"
 echo "\r\nRDS_PASSWORD=${RDS_PASSWORD}\r\n"
 
@@ -103,6 +113,7 @@ aws rds create-db-instance \
     --db-instance-class db.t4g.small \
     --engine postgres \
     --db-subnet-group-name "rds-${CLUSTER_NAME}" \
+    --vpc-security-group-ids ${RDS_SECURITY_GROUP} \
     --master-username dynamiq \
     --master-user-password ${RDS_PASSWORD} \
     --backup-retention-period 0 \
