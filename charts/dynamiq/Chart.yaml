@@ -28,7 +28,7 @@ dependencies:
     version: 1.20.5
     repository: https://fission.github.io/fission-charts
   - name: nexus
-    version: 0.1.13
+    version: 0.1.16
     repository: https://dynamiq-ai.github.io/charts
   - name: synapse
     version: 0.1.10
