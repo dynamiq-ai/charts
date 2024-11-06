@@ -1,7 +1,4 @@
 dynamiq:
-  apps:
-    namespace: apps
-
   imageCredentials:
     registry: https://index.docker.io/v1/
     username: ""
@@ -21,11 +18,3 @@ dynamiq:
       requests:
         cpu: 500m
         memory: 512Mi
-
-fission-all:
-  routerServiceType: ClusterIP
-  defaultNamespace: apps
-  createNamespace: true
-  analyticsNonHelmInstall: false
-  analytics: false
-

@@ -334,12 +334,24 @@ spec:
       role: ${EXTERNALSECRETS_IAM_ROLE_ARN}
 EOF
 ```
+```bash
+kubectl create namespace apps && \
+helm upgrade --install fission fission-all \
+  --repo https://fission.github.io/fission-charts/ \
+  --namespace fission \
+  --create-namespace \
+  --set routerServiceType=ClusterIP \
+  --set defaultNamespace=apps \
+  --set analyticsNonHelmInstall=false \
+  --set analytics=false
+```
 
 ```bash
 helm upgrade --install ingress-nginx ingress-nginx \
   --repo https://kubernetes.github.io/ingress-nginx \
   --namespace ingress-nginx --create-namespace
 ```
+
 
 ```bash
 kubectl create -k "github.com/fission/fission/crds/v1?ref=v1.20.5"
