@@ -78,6 +78,16 @@ echo "${CLUSTER_ENDPOINT} ${KARPENTER_IAM_ROLE_ARN}"
 ```
 
 ### Create RDS
+
+```bash
+export RDS_PASSWORD="d$(date | md5sum  |cut -f1 -d' ')"
+
+aws cloudformation deploy \
+  --stack-name "${CLUSTER_NAME}-rds" \
+  --template-file "/Users/andrey/sites/dynamiq/infra/cloudformation/dynamiq-rds.yaml" \
+  --parameter-overrides ClusterName=${CLUSTER_NAME} DBMasterUserPassword=${RDS_PASSWORD}\
+```
+
 ```bash
 export VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=eksctl-${CLUSTER_NAME}-cluster/VPC" --query 'Vpcs[*].VpcId' --output json | jq -rc '.[0]')
 export PRIVATE_SUBNETS_ID=$(aws ec2 describe-subnets \
@@ -345,6 +355,7 @@ spec:
 EOF
 ```
 ```bash
+kubectl create -k "github.com/fission/fission/crds/v1?ref=v1.20.5" && \
 kubectl create namespace apps && \
 helm upgrade --install fission fission-all \
   --repo https://fission.github.io/fission-charts/ \
@@ -362,6 +373,32 @@ helm upgrade --install ingress-nginx ingress-nginx \
   --namespace ingress-nginx --create-namespace
 ```
 
+```bash
+export STRING_DATA=$(cat<<EOF
+{
+  "AUTH_ACCESS_TOKEN_KEY": "change-me-please-i-am-no-secure_abcdefghjklmnopqrstvwxyz12345678",
+  "AUTH_REFRESH_TOKEN_KEY": "change-me-please-i-am-no-secure_abcdefghjklmnopqrstvwxyz12345678",
+  "AUTH_VERIFICATION_TOKEN_KEY": "change-me-please-i-am-no-secure_abcdefghjklmnopqrstvwxyz12345678",
+  "HUGGING_FACE_TOKEN": "",
+  "SENTRY_ENABLED": "false",
+  "SENTRY_DSN": "",
+  "SMTP_DEFAULT_FROM": "noreply@getdynamiq.app",
+  "SMTP_HOST": "",
+  "SMTP_PORT": "587",
+  "SMTP_PASSWORD": "",
+  "SMTP_USERNAME": ""
+ }
+EOF
+)
+
+aws secretsmanager create-secret \
+    --no-cli-pager \
+    --output table \
+    --name DYNAMIQ-NEXUS \
+    --description "Dynamiq Application secrets" \
+    --secret-string "${STRING_DATA}"
+
+```
 
 ```bash
 helm upgrade --install dynamiq dynamiq \
@@ -372,13 +409,27 @@ helm upgrade --install dynamiq dynamiq \
 ```
 
 ```bash
-eksctl delete cluster -n ${CLUSTER_NAME}
+kubectl get services --namespace ingress-nginx ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+```
+
+```bash
+helm uninstall karpenter --namespace kube-system
+```
+
+```bash
 
 aws rds delete-db-instance --db-instance-identifier rds-${CLUSTER_NAME} \
     --output table \
     --no-cli-pager \
     --skip-final-snapshot \
     --delete-automated-backups
+
+aws ec2 delete-security-group --group-id ${RDS_SECURITY_GROUP} \
+    --output table \
+    --no-cli-pager
+
+eksctl delete cluster -n ${CLUSTER_NAME}
+
 
 aws cloudformation delete-stack --stack-name "${CLUSTER_NAME}" \
   --output table \
