@@ -5,4 +5,6 @@ metadata:
   labels:
     app: nexus-service
 data:
-  {{- .Values.configMapData | toYaml | nindent 2 }}
+  {{- range $key, $value :=  .Values.configMapData }}
+  {{ $key | quote }}: {{ $value | quote }}
+  {{- end }}
