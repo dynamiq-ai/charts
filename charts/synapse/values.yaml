@@ -122,7 +122,11 @@ tolerations: []
 
 affinity: {}
 
-configMapData: {}
+configMapData:
+  ENV: prod
+  APPS_URL: 'http://router.fission.svc.cluster.local:80'
+  INFERENCES_NAMESPACE: inferences
+  STORAGE_SERVICE: s3
 
 secretData: {}
 
