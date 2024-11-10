@@ -132,15 +132,15 @@ configMapData:
   AUTH_VERIFICATION_TOKEN_TTL: 12h
   BILLING_ENABLED: 'false'
   FINE_TUNING_DOCKER_IMAGE: 'dynamiqai/fine-tuning:0.3.8'
+  FINE_TUNING_IMAGE_PULL_SECRET: docker-registry
   FINE_TUNING_NAMESPACE: fine-tuning
   FINE_TUNING_SERVICE_ACCOUNT: fine-tuning
-  FINE_TUNING_IMAGE_PULL_SECRET: docker-registry
   IMAGE_BUILDER_DOCKER_IMAGE: 'gcr.io/kaniko-project/executor:v1.23.1'
   IMAGE_BUILDER_NAMESPACE: image-builder
   IMAGE_BUILDER_SERVICE_ACCOUNT: image-builder
-  INFERENCE_DOCKER_IMAGE: 'ghcr.io/predibase/lorax:387e17e'
   INFERENCE_NAMESPACE: inferences
   INFERENCE_SERVICE_ACCOUNT: inference
+  INFERENCE_DOCKER_IMAGE: 'ghcr.io/predibase/lorax:387e17e'
   SERVICE_IMAGE_REPOSITORY: 128336707324.dkr.ecr.us-east-1.amazonaws.com/service
   SERVICE_NAMESPACE: services
   SERVICE_SERVICE_ACCOUNT: service
