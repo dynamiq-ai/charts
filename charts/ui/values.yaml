@@ -106,4 +106,5 @@ tolerations: []
 
 affinity: {}
 
-configMapData: {}
+configMapData:
+  ENV: prod
