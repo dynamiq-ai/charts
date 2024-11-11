@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: dynamiqai/nexus
+  repository: 709825985650.dkr.ecr.us-east-1.amazonaws.com/dynamiq/nexus
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
