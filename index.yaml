@@ -571,6 +571,16 @@ entries:
   synapse:
   - apiVersion: v2
     appVersion: 0.20.0
+    created: "2024-11-11T17:30:54.280545392Z"
+    description: A Helm chart for Kubernetes
+    digest: e6412c9def54aa96e738066e4935e462beb55019ffd74ef084457bc8e6a26259
+    name: synapse
+    type: application
+    urls:
+    - synapse-0.1.15.tgz
+    version: 0.1.15
+  - apiVersion: v2
+    appVersion: 0.20.0
     created: "2024-11-10T15:08:08.719911586Z"
     description: A Helm chart for Kubernetes
     digest: 458e8080f991131c62bd29a98054c0c5aeff9e8afd8837f6f6f62c3bcdbfd60f
@@ -650,4 +660,4 @@ entries:
     urls:
     - ui-0.1.9.tgz
     version: 0.1.9
-generated: "2024-11-11T17:30:17.07473949Z"
+generated: "2024-11-11T17:30:54.280650488Z"
