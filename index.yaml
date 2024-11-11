@@ -632,6 +632,16 @@ entries:
   ui:
   - apiVersion: v2
     appVersion: 0.20.0
+    created: "2024-11-11T17:31:17.126040901Z"
+    description: A Helm chart for Kubernetes
+    digest: 7093ed5d86d46e6fbe739b2d0723f269fb597b936366f8e670a1e7884e167d6c
+    name: ui
+    type: application
+    urls:
+    - ui-0.1.13.tgz
+    version: 0.1.13
+  - apiVersion: v2
+    appVersion: 0.20.0
     created: "2024-11-10T15:07:21.31492425Z"
     description: A Helm chart for Kubernetes
     digest: f9da7be15f7708d4d75ba28d3aad1e8f816274799fded5326f7824ffeefdf666
@@ -660,4 +670,4 @@ entries:
     urls:
     - ui-0.1.9.tgz
     version: 0.1.9
-generated: "2024-11-11T17:30:54.280650488Z"
+generated: "2024-11-11T17:31:17.126139947Z"
