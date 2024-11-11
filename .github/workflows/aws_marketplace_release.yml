@@ -1,53 +1,53 @@
-#name: Release Charts
-#
-#on:
-#  push:
-#    branches:
-#      - main
-#
-#jobs:
-#  release:
-#    permissions:
-#      contents: write
-#      id-token: write
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v4
-#        with:
-#          fetch-depth: 0
-#
-#      - name: Configure Git
-#        run: |
-#          git config user.name "$GITHUB_ACTOR"
-#          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-#
-#      - name: Install Helm
-#        uses: azure/setup-helm@v4
-#
-#      - name: add repos
-#        run: |
-#          helm repo add fission-all https://fission.github.io/fission-charts
-#
-#      - name: Configure AWS credentials
-#        uses: aws-actions/configure-aws-credentials@v4 # More information on this action can be found below in the 'AWS Credentials' section
-#        with:
-#          role-to-assume: arn:aws:iam::128336707324:role/github-actions
-#          aws-region: us-east-1
-#
-#      - name: Login to Amazon ECR
-#        id: login-ecr
-#        uses: aws-actions/amazon-ecr-login@v2
-#
-#      - name: yq - portable yaml processor
-#        uses: mikefarah/yq@v4.44.3
-#
-#      - name: Package and push helm chart to Amazon ECR
-#        env:
-#          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-#        run: |
-#          aws ecr get-login-password --region us-east-1 | helm registry login --username AWS --password-stdin 709825985650.dkr.ecr.us-east-1.amazonaws.com
-#          export D_VERSION=$(yq e .version charts/dynamiq/Chart.yaml)
-#          helm package charts/dynamiq -u -d ./.packages
-#          helm push ./.packages/dynamiq-$D_VERSION.tgz oci://709825985650.dkr.ecr.us-east-1.amazonaws.com/dynamiq
-#          aws ecr describe-images --registry-id 709825985650 --repository-name dynamiq/dynamiq --region us-east-1
+name: Release Charts
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    permissions:
+      contents: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: add repos
+        run: |
+          helm repo add fission-all https://fission.github.io/fission-charts
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4 # More information on this action can be found below in the 'AWS Credentials' section
+        with:
+          role-to-assume: arn:aws:iam::128336707324:role/github-actions
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: yq - portable yaml processor
+        uses: mikefarah/yq@v4.44.3
+
+      - name: Package and push helm chart to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          aws ecr get-login-password --region us-east-1 | helm registry login --username AWS --password-stdin 709825985650.dkr.ecr.us-east-1.amazonaws.com
+          export D_VERSION=$(yq e .version charts/dynamiq/Chart.yaml)
+          helm package charts/dynamiq -u -d ./.packages
+          helm push ./.packages/dynamiq-$D_VERSION.tgz oci://709825985650.dkr.ecr.us-east-1.amazonaws.com/dynamiq
+          aws ecr describe-images --registry-id 709825985650 --repository-name dynamiq/dynamiq --region us-east-1

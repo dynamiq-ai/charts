@@ -370,7 +370,9 @@ helm upgrade --install fission fission-all \
 ```bash
 helm upgrade --install ingress-nginx ingress-nginx \
   --repo https://kubernetes.github.io/ingress-nginx \
-  --namespace ingress-nginx --create-namespace
+  --namespace ingress-nginx \
+  --create-namespace \
+  --set controller.ingressClassResource.default=true	
 ```
 
 ```bash
@@ -379,14 +381,14 @@ export STRING_DATA=$(cat<<EOF
   "AUTH_ACCESS_TOKEN_KEY": "change-me-please-i-am-no-secure_abcdefghjklmnopqrstvwxyz12345678",
   "AUTH_REFRESH_TOKEN_KEY": "change-me-please-i-am-no-secure_abcdefghjklmnopqrstvwxyz12345678",
   "AUTH_VERIFICATION_TOKEN_KEY": "change-me-please-i-am-no-secure_abcdefghjklmnopqrstvwxyz12345678",
-  "HUGGING_FACE_TOKEN": "",
+  "HUGGING_FACE_TOKEN": "token",
   "SENTRY_ENABLED": "false",
   "SENTRY_DSN": "",
   "SMTP_DEFAULT_FROM": "noreply@getdynamiq.app",
-  "SMTP_HOST": "",
+  "SMTP_HOST": "127.0.0.1",
   "SMTP_PORT": "587",
-  "SMTP_PASSWORD": "",
-  "SMTP_USERNAME": ""
+  "SMTP_PASSWORD": "password",
+  "SMTP_USERNAME": "username"
  }
 EOF
 )
@@ -398,6 +400,27 @@ aws secretsmanager create-secret \
     --description "Dynamiq Application secrets" \
     --secret-string "${STRING_DATA}"
 
+```
+
+```bash
+kubectl create namespace dynamiq
+            
+eksctl create iamserviceaccount \
+    --name aws-dynamiq \
+    --namespace dynamiq \
+    --cluster ${CLUSTER_NAME} \
+    --attach-policy-arn arn:aws:iam::aws:policy/AWSMarketplaceMeteringFullAccess \
+    --attach-policy-arn arn:aws:iam::aws:policy/AWSMarketplaceMeteringRegisterUsage \
+    --attach-policy-arn arn:aws:iam::aws:policy/service-role/AWSLicenseManagerConsumptionPolicy \
+    --approve \
+    --override-existing-serviceaccounts
+```
+
+```bash
+helm upgrade --install dynamiq dynamiq \
+  --repo oci://709825985650.dkr.ecr.us-east-1.amazonaws.com/dynamiq/dynamiq  \
+  --namespace dynamiq \
+  --values .local.values.yaml
 ```
 
 ```bash
