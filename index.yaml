@@ -426,6 +426,16 @@ entries:
   nexus:
   - apiVersion: v2
     appVersion: 0.20.0
+    created: "2024-11-11T17:30:17.074597897Z"
+    description: A Helm chart for Kubernetes
+    digest: ce6a57f0b95fe3d49b1b1ab53daf4860549dbecbc66970b93fd63be7286eb00a
+    name: nexus
+    type: application
+    urls:
+    - nexus-0.1.27.tgz
+    version: 0.1.27
+  - apiVersion: v2
+    appVersion: 0.20.0
     created: "2024-11-10T15:06:40.26222328Z"
     description: A Helm chart for Kubernetes
     digest: e27f3e3158c9238c047ed32b88b9469f86f8db557e701e9bdbb4e5a54f1be8fc
@@ -640,4 +650,4 @@ entries:
     urls:
     - ui-0.1.9.tgz
     version: 0.1.9
-generated: "2024-11-10T15:09:11.123549539Z"
+generated: "2024-11-11T17:30:17.07473949Z"
