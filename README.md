@@ -85,85 +85,7 @@ export RDS_PASSWORD="d$(date | md5sum  |cut -f1 -d' ')"
 aws cloudformation deploy \
   --stack-name "${CLUSTER_NAME}-rds" \
   --template-file "/Users/andrey/sites/dynamiq/infra/cloudformation/dynamiq-rds.yaml" \
-  --parameter-overrides ClusterName=${CLUSTER_NAME} DBMasterUserPassword=${RDS_PASSWORD}\
-```
-
-```bash
-export VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=eksctl-${CLUSTER_NAME}-cluster/VPC" --query 'Vpcs[*].VpcId' --output json | jq -rc '.[0]')
-export PRIVATE_SUBNETS_ID=$(aws ec2 describe-subnets \
-    --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:Name,Values=eksctl-${CLUSTER_NAME}-cluster/SubnetPrivate*" \
-    --query 'Subnets[*].SubnetId' \
-    --output json | jq -c .)
-    
-aws rds create-db-subnet-group \
-    --no-cli-pager \
-    --output table \
-    --db-subnet-group-name rds-${CLUSTER_NAME} \
-    --db-subnet-group-description rds-${CLUSTER_NAME} \
-    --subnet-ids ${PRIVATE_SUBNETS_ID}
-
-export RDS_SECURITY_GROUP=$(aws ec2 create-security-group --output json --group-name rds-${CLUSTER_NAME} --description "RDS Security Group" --vpc-id ${VPC_ID} | jq -r '.GroupId')
-
-aws ec2 authorize-security-group-ingress \
-    --output table \
-    --no-cli-pager \
-    --group-id ${RDS_SECURITY_GROUP} \
-    --protocol tcp \
-    --port 5432 \
-    --source-group $(aws ec2 describe-security-groups --filters "Name=tag:Name,Values=eksctl-${CLUSTER_NAME}-cluster/ClusterSharedNodeSecurityGroup" --query 'SecurityGroups[*].GroupId' --output json | jq -rc '.[0]')
-
-export RDS_PASSWORD="$(date | md5sum  |cut -f1 -d' ')"
-echo "\r\nRDS_PASSWORD=${RDS_PASSWORD}\r\n"
-
-aws rds create-db-instance \
-    --no-cli-pager \
-    --output table \
-    --db-instance-identifier rds-${CLUSTER_NAME} \
-    --db-name dynamiq \
-    --db-instance-class db.t4g.small \
-    --engine postgres \
-    --db-subnet-group-name "rds-${CLUSTER_NAME}" \
-    --vpc-security-group-ids ${RDS_SECURITY_GROUP} \
-    --master-username dynamiq \
-    --master-user-password ${RDS_PASSWORD} \
-    --backup-retention-period 0 \
-    --allocated-storage 20
-
-aws rds wait db-instance-available --db-instance-identifier rds-${CLUSTER_NAME}
-```
-
-How to reset RDS password
-```bash
-aws rds modify-db-instance \
-    --no-cli-pager \
-    --output table \
-    --db-instance-identifier rds-${CLUSTER_NAME} \
-    --apply-immediately \
-    --master-user-password ${RDS_PASSWORD} 
-```
-
-### Create Secret
-```bash
-RDS_ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier rds-${CLUSTER_NAME} --query 'DBInstances[*].Endpoint.Address' --output text)
-RDS_PORT=$(aws rds describe-db-instances --db-instance-identifier rds-${CLUSTER_NAME} --query 'DBInstances[*].Endpoint.Port' --output text)
-RDS_USERNAME=$(aws rds describe-db-instances --db-instance-identifier rds-${CLUSTER_NAME} --query 'DBInstances[*].MasterUsername' --output text)
-RDS_DATABASE_NAME=$(aws rds describe-db-instances --db-instance-identifier rds-${CLUSTER_NAME} --query 'DBInstances[*].DBName' --output text)
-
-
-aws secretsmanager create-secret \
-    --no-cli-pager \
-    --output table \
-    --name DYNAMIQ-DB \
-    --description "Dynamiq DB" \
-    --secret-string "{\"username\":\"${RDS_USERNAME}\",\"password\":\"${RDS_PASSWORD}\",\"server_name\":\"${RDS_ENDPOINT}\",\"database\":\"${RDS_DATABASE_NAME}\"}"
-```
-
-```bash
-aws secretsmanager update-secret \
-    --no-cli-pager \
-    --output table \
-    --secret-id arn:aws:secretsmanager:us-east-1:128336707324:secret:DYNAMIQ-DB-CrIg8A \
-    --secret-string "{\"username\":\"${RDS_USERNAME}\",\"password\":\"${RDS_PASSWORD}\",\"server_name\":\"${RDS_ENDPOINT}\",\"database\":\"${RDS_DATABASE_NAME}\"}"
+  --parameter-overrides ClusterName=${CLUSTER_NAME} DBMasterUserPassword=${RDS_PASSWORD}  
 ```
 
 ## Setup Karpenter
@@ -185,6 +107,7 @@ helm upgrade --install karpenter oci://public.ecr.aws/karpenter/karpenter \
   --set controller.resources.limits.memory=1Gi \
   --wait
 ```
+
 ```bash
 aws iam create-service-linked-role --aws-service-name spot.amazonaws.com || true
 ```
@@ -364,7 +287,8 @@ helm upgrade --install fission fission-all \
   --set routerServiceType=ClusterIP \
   --set defaultNamespace=apps \
   --set analyticsNonHelmInstall=false \
-  --set analytics=false
+  --set analytics=false \
+  --wait
 ```
 
 ```bash
@@ -372,7 +296,8 @@ helm upgrade --install ingress-nginx ingress-nginx \
   --repo https://kubernetes.github.io/ingress-nginx \
   --namespace ingress-nginx \
   --create-namespace \
-  --set controller.ingressClassResource.default=true	
+  --set controller.ingressClassResource.default=true \
+  --wait
 ```
 
 ```bash
@@ -416,46 +341,98 @@ eksctl create iamserviceaccount \
     --override-existing-serviceaccounts
 ```
 
+
 ```bash
-helm upgrade --install dynamiq dynamiq \
-  --repo oci://709825985650.dkr.ecr.us-east-1.amazonaws.com/dynamiq/dynamiq  \
-  --namespace dynamiq \
-  --values .local.values.yaml
+export STORAGE_S3_BUCKET="${CLUSTER_NAME}-data-${RANDOM}"
+export BASE_DOMAIN="chart-example.lc"
+
+aws s3api create-bucket \
+  --bucket ${STORAGE_S3_BUCKET} \
+  --region ${AWS_DEFAULT_REGION} \
+  --create-bucket-configuration LocationConstraint=${AWS_DEFAULT_REGION} \
+  --output table \
+  --no-cli-pager
+  
+
+cat <<EOF >local.values.yaml
+nexus:
+  ingress:
+    enabled: true
+    hosts:
+      - host: nexus.${BASE_DOMAIN}
+        paths:
+          - path: /
+            pathType: Prefix
+  configMapData:
+    DOMAIN: nexus.${BASE_DOMAIN}
+    UI_URL: 'https://ui.${BASE_DOMAIN}'
+    STORAGE_S3_BUCKET: dynamiqai-prod
+
+synapse:
+  ingress:
+    enabled: true
+    hosts:
+      - host: synapse.${BASE_DOMAIN}
+        paths:
+          - path: /
+            pathType: Prefix
+  configMapData:
+    STORAGE_S3_BUCKET: dynamiqai-prod
+
+ui:
+  ingress:
+    enabled: true
+    hosts:
+      - host: ui.${BASE_DOMAIN}
+        paths:
+          - path: /
+            pathType: Prefix
+  configMapData:
+    UI_APP_API_URL: 'https://nexus.${BASE_DOMAIN}'
+EOF
 ```
 
 ```bash
-helm upgrade --install dynamiq dynamiq \
-  --repo https://dynamiq-ai.github.io/charts/ \
-  --namespace dynamiq \
-  --create-namespace \
-  --values .local.values.yaml
+aws ecr get-login-password \
+    --region us-east-1 | helm registry login \
+    --username AWS \
+    --password-stdin 709825985650.dkr.ecr.us-east-1.amazonaws.com
 ```
 
 ```bash
-kubectl get services --namespace ingress-nginx ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+helm upgrade --install dynamiq oci://709825985650.dkr.ecr.us-east-1.amazonaws.com/dynamiq/dynamiq \
+  --namespace dynamiq \
+  --values local.values.yaml
 ```
+
+```bash
+kubectl get ingress --namespace dynamiq
+```
+
+# Cleanup 
 
 ```bash
 helm uninstall karpenter --namespace kube-system
+
+kubectl delete nodeclaims --all
 ```
 
 ```bash
 
-aws rds delete-db-instance --db-instance-identifier rds-${CLUSTER_NAME} \
-    --output table \
-    --no-cli-pager \
-    --skip-final-snapshot \
-    --delete-automated-backups
-
-aws ec2 delete-security-group --group-id ${RDS_SECURITY_GROUP} \
-    --output table \
-    --no-cli-pager
+aws cloudformation delete-stack \
+  --stack-name "${CLUSTER_NAME}-rds" \
+  --output table \
+  --no-cli-pager
 
 eksctl delete cluster -n ${CLUSTER_NAME}
-
 
 aws cloudformation delete-stack --stack-name "${CLUSTER_NAME}" \
   --output table \
   --no-cli-pager
+  
+aws s3api delete-bucket --bucket ${STORAGE_S3_BUCKET}
+```
+
+```bash  
 
 ```
