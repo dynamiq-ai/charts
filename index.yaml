@@ -591,6 +591,16 @@ entries:
   synapse:
   - apiVersion: v2
     appVersion: 0.20.0
+    created: "2025-01-03T17:54:56.453889777Z"
+    description: A Helm chart for Kubernetes
+    digest: c68e2032379e917a70459e3a79bf7629e2cc3c5b5ac5d0a47d19631b220938cb
+    name: synapse
+    type: application
+    urls:
+    - https://github.com/dynamiq-ai/charts/releases/download/synapse-0.1.16/synapse-0.1.16.tgz
+    version: 0.1.16
+  - apiVersion: v2
+    appVersion: 0.20.0
     created: "2024-11-11T17:30:54.280545392Z"
     description: A Helm chart for Kubernetes
     digest: e6412c9def54aa96e738066e4935e462beb55019ffd74ef084457bc8e6a26259
@@ -700,4 +710,4 @@ entries:
     urls:
     - ui-0.1.9.tgz
     version: 0.1.9
-generated: "2025-01-03T17:52:55.123621647Z"
+generated: "2025-01-03T17:54:56.454000794Z"
