@@ -1,0 +1,81 @@
+<!-- Add useful information to your short description that explains what the product is, why a user wants to install and use it, and any additional details the user needs to get started. The following information is an example. Make sure you update this section accordingly. -->
+
+Bitnami charts for Helm are carefully engineered, actively maintained and are the quickest and easiest way to deploy containers on a Kubernetes cluster that are ready to handle production workloads.
+
+In IBM Cloud, you can configure your installation from the Create tab, and then install it with a single click instead of executing the Helm installation directly. Your Helm Chart is installed by using IBM Cloud Schematics, and after the installation is complete, you can view the chart instance, update the version, or uninstall from your Schematics workspace.
+
+## Before you begin
+
+<!-- List any prereqs including required permissions, capacity requirements, etc. The following information is an example. Make sure you update this section accordingly. -->
+
+* Install the IBM Cloud Block Storage plug-in from the [catalog](https://cloud.ibm.com/catalog/content/ibmcloud-block-storage-plugin).
+* Download Kubernetes 1.12+ and Helm 2.11+ or Helm 3.0-beta3+.
+* To successfully install the software, you must have the [administrator and manager roles](https://cloud.ibm.com/docs/iam?topic=iam-userroles#iamusermanrol) on the Kubernetes cluster service.
+
+## Security and compliance controlsÂ
+
+<!-- (Optional) List controls that you want to appear in your product's About information. Only controls that are supported by Security and Compliance Center and formatted correctly appear in the Manage compliance tab during onboarding.
+
+To include controls with your product's information, make sure that the controls are listed in one table. The table must include the following:Â
+
+
+- A Profile column
+- An ID column
+
+
+You can include more columns in the table; however, this information might be overwritten or excluded.Â
+
+
+The following information is an example. Make sure you update this section accordingly.-->Â
+
+Bitnami charts for Helm meet the following controls.
+
+
+| Profile | ID |
+|---------|----|
+| NIST | SC-7(3) |
+
+## Required resources
+
+<!-- The following information is an example. Make sure you update this section accordingly. -->
+
+To run the software, the following resources are required:
+
+  *
+  *
+  *
+
+## Installing the software
+
+<!-- It is recommended to not include the large table of configuration parameters that are listed on the Create page. -->
+
+### Production configuration
+
+<!-- Add additional H3 level headings as needed for sections that apply to IBM Cloud such as network policy, persistence, cluster topologies, etc.
+### H3
+### H3
+-->
+
+## Upgrading to a new version
+
+<!-- Information about how a user can upgrade to a new version when it's available. The following information is an example. Make sure you update this section accordingly. -->
+
+When a new version of a Helm Chart is available, you're alerted in your Schematics workspace. To upgrade to a new version, complete the following steps:
+
+1. Go to the **Menu** > **Schematics**.
+2. Select your workspace name.
+3. Click **Settings**. In the Summary section, your version number is displayed.
+4. Click **Update**.
+5. Select a version, and click **Update**.
+
+## Uninstalling the software
+
+<!-- Information about how a user can uninstall this product. The following information is an example. Make sure you update this section accordingly. -->
+
+Complete the following steps to uninstall a Helm Chart from your account.
+
+1. Go to the **Menu** > **Schematics**.
+2. Select your workspace name.
+3. Click **Actions** > **Destroy resources**. All resources in your workspace are deleted.
+4. Click **Update**.
+5. To delete your workspace, click **Actions** > **Delete workspace**.
