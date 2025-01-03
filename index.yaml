@@ -446,6 +446,16 @@ entries:
   nexus:
   - apiVersion: v2
     appVersion: 0.20.0
+    created: "2025-01-03T17:55:25.988661456Z"
+    description: A Helm chart for Kubernetes
+    digest: d11983c6f0cdf4df1f6386d32e89d77a47231fa612bb7b8131aa6c12503c5874
+    name: nexus
+    type: application
+    urls:
+    - https://github.com/dynamiq-ai/charts/releases/download/nexus-0.1.28/nexus-0.1.28.tgz
+    version: 0.1.28
+  - apiVersion: v2
+    appVersion: 0.20.0
     created: "2024-11-11T17:30:17.074597897Z"
     description: A Helm chart for Kubernetes
     digest: ce6a57f0b95fe3d49b1b1ab53daf4860549dbecbc66970b93fd63be7286eb00a
@@ -710,4 +720,4 @@ entries:
     urls:
     - ui-0.1.9.tgz
     version: 0.1.9
-generated: "2025-01-03T17:54:56.454000794Z"
+generated: "2025-01-03T17:55:25.988859234Z"
