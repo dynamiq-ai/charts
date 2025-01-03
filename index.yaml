@@ -652,6 +652,16 @@ entries:
   ui:
   - apiVersion: v2
     appVersion: 0.20.0
+    created: "2025-01-03T17:52:55.123503837Z"
+    description: A Helm chart for Kubernetes
+    digest: 0340ceef972dab00f6ca2951fbd116fe02b9b5ceea7edc3a73d9d055a6c9ef4b
+    name: ui
+    type: application
+    urls:
+    - https://github.com/dynamiq-ai/charts/releases/download/ui-0.1.14/ui-0.1.14.tgz
+    version: 0.1.14
+  - apiVersion: v2
+    appVersion: 0.20.0
     created: "2024-11-11T17:31:17.126040901Z"
     description: A Helm chart for Kubernetes
     digest: 7093ed5d86d46e6fbe739b2d0723f269fb597b936366f8e670a1e7884e167d6c
@@ -690,4 +700,4 @@ entries:
     urls:
     - ui-0.1.9.tgz
     version: 0.1.9
-generated: "2024-11-11T19:58:04.145248648Z"
+generated: "2025-01-03T17:52:55.123621647Z"
